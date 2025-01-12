@@ -57,13 +57,15 @@ object Utils {
    * Measures and prints the execution time of a block of code.
    *
    * @param block The code block to execute.
+   * @return The result of the execution
    */
-  def printTime(text: String, block: => Unit): Unit = {
+  def printTime(text: String, block: => DataFrame): DataFrame = {
     val startTime = System.nanoTime()
-    block
+    val result = block
     val endTime = System.nanoTime()
     val durationSeconds = (endTime - startTime) / 1e9
     println(s"$text => Executed in $durationSeconds s")
+    result
   }
 
   /**
@@ -90,11 +92,12 @@ object Utils {
    * @param dbtable The destination table name.
    * @param options Additional write options.
    */
-  def writeDfToJdbc(df: DataFrame, dbtable: String, options: Map[String, String] = Map()): Unit = {
+  def writeDfToJdbc(df: DataFrame, dbtable: String, options: Map[String, String] = Map()): DataFrame = {
     df.write.format("jdbc")
       .mode("overwrite")
       .options(jdbcOptions(dbtable, options))
       .save()
+    df
   }
 
   /**

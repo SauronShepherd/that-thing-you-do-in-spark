@@ -21,7 +21,7 @@ object Main {
 
     // Joining Data
     printSection("Joining Data")
-    val multiJoinDF = JoiningData.run(df, filteredCoaDF)
+    val multiJoinDF = JoiningData.run(df, filteredDF, filteredRepDF, filteredCoaDF)
 
     // Writing & Reading using files
     printSection("Writing & Reading using files")

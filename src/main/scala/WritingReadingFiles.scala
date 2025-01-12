@@ -16,12 +16,13 @@ object WritingReadingFiles {
   def run(df: DataFrame): DataFrame = {
 
     // Get the current Spark session
-    var spark = df.sparkSession
+    val spark = df.sparkSession
 
     var readFilesDF = df
 
     // Loop to perform the operations 5 times
-    for (i <- 1 to 5) {
+    val numJoins = 5
+    for (i <- 1 to numJoins) {
       // Define the folder path where the DataFrame will be written
       val folderPath = s"data/df$i"
 
@@ -34,6 +35,9 @@ object WritingReadingFiles {
       // Load the written files back into a DataFrame and print the number of partitions
       readFilesDF = printNumParts("Read data from files", spark.read.load(folderPath))
 
+      // Unpersist the cached DataFrame
+      readFilesDF.unpersist()
+
       // Count and print the number of Parquet files in the folder
       val parquetFilesCount = Files.list(Paths.get(folderPath))
         .filter(path => path.toString.endsWith(".parquet")) // Filter for Parquet files
@@ -44,26 +48,12 @@ object WritingReadingFiles {
     }
 
     // Set a configuration parameter for maximum partition size
-    spark.conf.set("spark.sql.files.maxPartitionBytes", "18432") // 18 KB max partition size
+    spark.conf.set("spark.sql.files.maxPartitionBytes", (18 * 1024).toString)
 
     // Load the data with the updated configuration and print the number of partitions
     printNumParts(
       "Read data from files with 18 KB maxPartitionBytes",
-      spark.read.load("data/df5")
-    )
-
-    // Stop the current Spark session
-    spark.stop()
-
-    // Create a new Spark session with custom configuration for maxPartitionBytes
-    //spark = createSparkSession(Map("spark.sql.files.maxPartitionBytes" -> "18432"))
-    spark = createSparkSession()
-    spark.conf.set("spark.sql.files.maxPartitionBytes", "18432") // 18 KB max partition size
-
-    // Read the data again with the new session and print the number of partitions
-    readFilesDF = printNumParts(
-      "Read data from files with 18 KB maxPartitionBytes (new Spark session)",
-      spark.read.load("data/df5")
+      spark.read.load(s"data/df$numJoins")
     )
 
     // Return the final DataFrame

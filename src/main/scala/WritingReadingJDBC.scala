@@ -16,7 +16,7 @@ object WritingReadingJDBC {
    */
   def run(df: DataFrame): Unit = {
 
-    // Measure and log the time taken for JDBC writes with different configurations.
+    val spark = df.sparkSession
 
     // Default JDBC write with batch size of 1000
     printTime(
@@ -44,7 +44,7 @@ object WritingReadingJDBC {
       "partitionColumn" -> "date",
       "lowerBound" -> startDate.toString,
       "upperBound" -> endDate.toString,
-      "numPartitions" -> "16"
+      "numPartitions" -> spark.sparkContext.defaultParallelism.toString
     )
 
     // Read from JDBC using date-based partitioning and log the number of partitions
@@ -52,7 +52,7 @@ object WritingReadingJDBC {
       "",
       printNumParts(
         "JDBC read partitioning by date",
-        readDfFromJdbc(df.sparkSession, "dates", jdbcReadByDateOptions)
+        readDfFromJdbc(spark, "dates", jdbcReadByDateOptions)
       )
     )
 
@@ -61,7 +61,7 @@ object WritingReadingJDBC {
       "partitionColumn" -> "day_of_month",
       "lowerBound" -> "1",
       "upperBound" -> "31",
-      "numPartitions" -> "16"
+      "numPartitions" -> spark.sparkContext.defaultParallelism.toString
     )
 
     // Custom query for reading specific columns and casting types, for partitioning by 'day_of_month'
@@ -72,7 +72,7 @@ object WritingReadingJDBC {
       "",
       printNumParts(
         "JDBC read partitioning by day_of_month",
-        readDfFromJdbc(df.sparkSession, query, jdbcReadByDayOfMonthOptions)
+        readDfFromJdbc(spark, query, jdbcReadByDayOfMonthOptions)
       )
     )
   }
